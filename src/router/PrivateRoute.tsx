@@ -6,7 +6,6 @@ import { useAppSelector } from '../redux/hooks';
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const {accessToken, loading} = useAppSelector((state) => state.auth);
   const location = useLocation();
-
   if (accessToken && accessToken) {
     return children;
   }

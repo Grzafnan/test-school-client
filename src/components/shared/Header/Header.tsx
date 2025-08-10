@@ -1,14 +1,18 @@
 "use client"
 
 import { useState } from "react"
-import { Link, NavLink } from "react-router-dom"
+import { Link, NavLink, useNavigate } from "react-router-dom"
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai"
-import { useAppSelector } from "../../../redux/hooks"
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks"
+import { logout } from "../../../redux/api/authApi/authSlice"
+import { toast } from "sonner"
 
 const Header = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { accessToken, user} = useAppSelector((state) => state.auth);
-  console.log({ user, accessToken });
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const { accessToken, user } = useAppSelector((state) => state.auth);
 
   const menus = [
     { name: "Home", href: "/" },
@@ -25,9 +29,20 @@ const Header = () => {
     setIsMobileMenuOpen(false)
   }
 
+  const toggleProfileMenu = () => {
+    setIsProfileOpen(!isProfileOpen)
+  }
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success("Logged out successfully");
+    navigate("/login");
+
+  }
+
   return (
     <header className="bg-white shadow-lg relative">
-      <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8" style={{margin: "0 auto"}}>
+      <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8" style={{ margin: "0 auto" }}>
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="md:flex md:items-center md:gap-12">
@@ -50,8 +65,7 @@ const Header = () => {
                   <li key={index}>
                     <NavLink
                       className={({ isActive }) =>
-                        `font-medium transition-all duration-200 relative ${
-                          isActive ? "text-teal-600" : "text-gray-500 hover:text-gray-700"
+                        `font-medium transition-all duration-200 relative ${isActive ? "text-teal-600" : "text-gray-500 hover:text-gray-700"
                         }`
                       }
                       to={menu.href}
@@ -76,30 +90,106 @@ const Header = () => {
           {/* Desktop Auth Buttons & Mobile Menu Button */}
           <div className="flex items-center gap-4">
             {/* Desktop Auth Buttons */}
-            <div className="hidden sm:flex sm:gap-4">
-              <NavLink
-                className={({ isActive }) =>
-                  `rounded-md px-5 py-2.5 text-sm font-medium shadow-sm transition-colors ${
-                    isActive ? "bg-teal-700 text-white" : "bg-teal-600 text-white hover:bg-teal-700"
-                  }`
-                }
-                to="/login"
-              >
-                Login
-              </NavLink>
-              <NavLink
-                className={({ isActive }) =>
-                  `rounded-md px-5 py-2.5 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-gray-200 text-teal-700 border-2 border-teal-600"
-                      : "bg-gray-100 text-teal-600 hover:bg-gray-200"
-                  }`
-                }
-                to="/register"
-              >
-                Register
-              </NavLink>
-            </div>
+
+
+            {
+              accessToken && user ? (
+                <div className="hidden md:relative md:block">
+                  <button
+                    type="button"
+                    onClick={toggleProfileMenu}
+                    className="overflow-hidden rounded-full border border-gray-300 shadow-inner"
+                  >
+                    <span className="sr-only">Toggle dashboard menu</span>
+
+                    <img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCWOFXk4y0sZ1sdcBEEHKGdmAFXuSpafSP1Q&s"
+                      alt=""
+                      className="size-10 object-cover"
+                    />
+                  </button>
+
+                  <div
+                    className={`${isProfileOpen ? "block" : "hidden"} absolute end-0 z-10 mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg`}
+                    role="menu"
+                  >
+                    <div className="p-2">
+                      <a
+                        href="#"
+                        className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                        role="menuitem"
+                      >
+                        My profile
+                      </a>
+
+                      <a
+                        href="#"
+                        className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                        role="menuitem"
+                      >
+                        Billing summary
+                      </a>
+
+                      <a
+                        href="#"
+                        className="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                        role="menuitem"
+                      >
+                        Team settings
+                      </a>
+
+                      <button
+                        type="submit"
+                        className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                        role="menuitem"
+                        onClick={handleLogout}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="size-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                          />
+                        </svg>
+
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              ) : (
+                <div className="hidden sm:flex sm:gap-4">
+                  <NavLink
+                    className={({ isActive }) =>
+                      `rounded-md px-5 py-2.5 text-sm font-medium shadow-sm transition-colors ${isActive ? "bg-teal-700 text-white" : "bg-teal-600 text-white hover:bg-teal-700"
+                      }`
+                    }
+                    to="/login"
+                  >
+                    Login
+                  </NavLink>
+                  <NavLink
+                    className={({ isActive }) =>
+                      `rounded-md px-5 py-2.5 text-sm font-medium transition-colors ${isActive
+                        ? "bg-gray-200 text-teal-700 border-2 border-teal-600"
+                        : "bg-gray-100 text-teal-600 hover:bg-gray-200"
+                      }`
+                    }
+                    to="/register"
+                  >
+                    Register
+                  </NavLink>
+                </div>
+              )
+            }
 
             {/* Mobile Menu Button */}
             <div className="block md:hidden">
@@ -120,11 +210,11 @@ const Header = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={closeMobileMenu} />
       )}
 
+
       {/* Mobile Menu */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Mobile Menu Header */}
@@ -153,10 +243,9 @@ const Header = () => {
                 <li key={index}>
                   <NavLink
                     className={({ isActive }) =>
-                      `block py-3 px-4 text-lg font-medium rounded-lg transition-all duration-200 relative ${
-                        isActive
-                          ? "text-teal-600 bg-teal-50 border-l-4 border-teal-600"
-                          : "text-gray-700 hover:text-teal-600 hover:bg-gray-50"
+                      `block py-3 px-4 text-lg font-medium rounded-lg transition-all duration-200 relative ${isActive
+                        ? "text-teal-600 bg-teal-50 border-l-4 border-teal-600"
+                        : "text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                       }`
                     }
                     to={menu.href}
@@ -179,8 +268,7 @@ const Header = () => {
           <div className="p-4 border-t border-gray-200 flex flex-col gap-3">
             <NavLink
               className={({ isActive }) =>
-                `block w-full text-center rounded-md px-5 py-3 text-sm font-medium shadow-sm transition-colors ${
-                  isActive ? "bg-teal-700 text-white" : "bg-teal-600 text-white hover:bg-teal-700"
+                `block w-full text-center rounded-md px-5 py-3 text-sm font-medium shadow-sm transition-colors ${isActive ? "bg-teal-700 text-white" : "bg-teal-600 text-white hover:bg-teal-700"
                 }`
               }
               to="/login"
@@ -190,10 +278,9 @@ const Header = () => {
             </NavLink>
             <NavLink
               className={({ isActive }) =>
-                `block w-full text-center rounded-md px-5 py-3 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-gray-200 text-teal-700 border-2 border-teal-600"
-                    : "bg-gray-100 text-teal-600 hover:bg-gray-200"
+                `block w-full text-center rounded-md px-5 py-3 text-sm font-medium transition-colors ${isActive
+                  ? "bg-gray-200 text-teal-700 border-2 border-teal-600"
+                  : "bg-gray-100 text-teal-600 hover:bg-gray-200"
                 }`
               }
               to="/register"

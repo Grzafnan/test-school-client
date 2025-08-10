@@ -1,6 +1,7 @@
 import { api } from "../api";
 
 export interface IUser {
+  id: string;
   _id: string;
   name: string;
   email: string;
@@ -21,6 +22,13 @@ export interface LoginResponse {
   };
 }
 
+export interface IGetCurrentUserResponse {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: IUser;
+}
+
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
@@ -36,7 +44,7 @@ export const authApi = api.injectEndpoints({
         method: "POST",
       }),
     }),
-    getCurrentUser: builder.query<{ data: { user: IUser } }, void>({
+    getCurrentUser: builder.query<IGetCurrentUserResponse, void>({
       query: () => "/auth/profile",
     }),
   }),

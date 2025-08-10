@@ -1,12 +1,6 @@
 // authSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-export interface IUser {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { IUser } from "./authApi";
 
 export interface AuthState {
   user: IUser | null;
@@ -35,6 +29,7 @@ const authSlice = createSlice({
       state.error = null;
     },
     setProfile: (state, action: PayloadAction<IUser | null>) => {
+      console.log("User profile updated:", action.payload);
       state.user = action.payload;
     },
     logout: (state) => {

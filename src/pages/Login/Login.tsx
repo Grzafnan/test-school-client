@@ -15,6 +15,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { useGetCurrentUserQuery, useLoginMutation } from "../../redux/api/authApi/authApi"
 import { useAppDispatch } from "../../redux/hooks"
 import { setCredentials, setError, setProfile } from "../../redux/api/authApi/authSlice";
+import { toast } from 'sonner';
 
 interface FormData {
   email: string
@@ -44,11 +45,13 @@ const Login = () => {
 
 
   useEffect(()=>{
-      if(isSuccessUser && currentUser?.data?.user) {
-        dispatch(setProfile(currentUser.data.user));
-          navigate("/assessment");
+      if(isSuccess && isSuccessUser) {
+        console.log("User login successful:", currentUser);
+        dispatch(setProfile(currentUser.data));
+        toast.success("User login successfully");
+        navigate("/assessment");
       }
-  },[isSuccessUser, navigate, dispatch, currentUser])
+  },[isSuccess , isSuccessUser, navigate, dispatch, currentUser])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -113,22 +116,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (field === "confirmPassword" && formData.password === formData.confirmPassword) return "success"
 
     return "default"
-  }
-
-  if (isSuccess) {
-    return (
-      <Card className="w-full max-w-md mx-auto transform transition-all duration-500 scale-105">
-        <CardContent className="pt-6">
-          <div className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <AiOutlineCheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-green-600">Success!</h2>
-            <p className="text-gray-600">Welcome back!</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
