@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/Card"
 import {
   AiOutlineEye,
@@ -10,9 +10,11 @@ import {
   AiOutlineCheckCircle,
   AiOutlineExclamationCircle,
 } from "react-icons/ai"
-import { Button } from "../../components/ui/Button"
 import { Input } from "../../components/ui/Input"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { useGetCurrentUserQuery, useLoginMutation } from "../../redux/api/authApi/authApi"
+import { useAppDispatch } from "../../redux/hooks"
+import { setCredentials, setError, setProfile } from "../../redux/api/authApi/authSlice";
 
 interface FormData {
   email: string
@@ -27,16 +29,27 @@ interface FormErrors {
 }
 
 const Login = () => {
+  const dispatch = useAppDispatch();
+  const [login, { isLoading, data, isSuccess }] = useLoginMutation();
+  const { data: currentUser, isLoading: isLoadingUser, isSuccess: isSuccessUser } = useGetCurrentUserQuery(undefined, { skip: !data?.data?.accessToken });
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
-    confirmPassword: "",
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+  // const [isSuccess, setIsSuccess] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
+
+
+  useEffect(()=>{
+      if(isSuccessUser) {
+        console.log("User data fetched successfully", currentUser);
+        dispatch(setProfile(currentUser?.data));
+          navigate("/assessment");
+      }
+  },[isSuccessUser, navigate, dispatch, currentUser])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -62,10 +75,6 @@ const Login = () => {
       newErrors.password = "Password must be at least 6 characters"
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -78,26 +87,23 @@ const Login = () => {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  try {
+    const res = await login({ email: formData.email, password: formData.password }).unwrap();
 
-    if (!validateForm()) return
-
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    setIsLoading(false)
-    setIsSuccess(true)
-
-    // Reset success state after 3 seconds
-    setTimeout(() => {
-      setIsSuccess(false)
-      setFormData({ email: "", password: "", confirmPassword: "" })
-    }, 3000)
+    if(res.success) {
+      dispatch(setCredentials({ accessToken: res.data.accessToken }));
+      // dispatch(setCredentials(res.data.isLoadingUser));
+      // navigate("/assessment");
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      dispatch(setError(error.data?.message || "Login failed"));
+      setErrors({ email: " ", password: "Invalid email or password" }); // example error display
+    }
   };
-
   // Real-time validation feedback
   const getFieldStatus = (field: keyof FormData) => {
     if (!formData[field]) return "default"
@@ -209,12 +215,12 @@ const Login = () => {
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4">
-            <Button
+            <button
               type="submit"
               className="w-full group transition-all duration-200 hover:scale-[1.02]"
               disabled={isLoading}
             >
-              {isLoading ? (
+              {isLoading || isLoadingUser ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Processing...</span>
@@ -225,7 +231,7 @@ const Login = () => {
                   <AiOutlineArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               )}
-            </Button>
+            </button>
             <div className="text-center">
               <Link
                 to={`/register`}

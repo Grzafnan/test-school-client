@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Step from '../../components/Step/Step';
 import Certification from '../../components/Certification/Certification';
 import { useGetAllAssessmentQuery } from '../../redux/api/assessmentApi/assessment.api';
+import { IAssessment } from '../../interfaces/common';
 
 const MemoizedStep = React.memo(Step);
 
@@ -10,16 +11,12 @@ const Assessment = () => {
   const [score, setScore] = useState<number>(0);
   const [certifiedLevel, setCertifiedLevel] = useState<string>("fail");
   const [noRetake, setNoRetake] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedAssessment, setSelectedAssessment] = useState<IAssessment | null>(null);
 
   const { data: assessments, isLoading } = useGetAllAssessmentQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
 
-  const selectedAssessment = useMemo(() => {
-    if (!selectedId || !assessments?.data) return null;
-    return assessments.data.find(a => a._id === selectedId) || null;
-  }, [selectedId, assessments?.data]);
 
   const handleStepComplete = useCallback((stepScore: number, level: string, failNoRetake: boolean) => {
     setScore(stepScore);
@@ -31,8 +28,8 @@ const Assessment = () => {
     }
   }, [step]);
 
-  const handleSelect = useCallback((id: string) => {
-    setSelectedId(id);
+  const handleSelect = useCallback((assessment: IAssessment) => {
+    setSelectedAssessment(assessment);
   }, []);
 
   useEffect(() => {
@@ -52,21 +49,26 @@ const Assessment = () => {
   }
   
   return (
-    <div>
-      <h2>Assessment in Progress - Step {step}</h2>
-
-      {!isLoading && assessments && assessments.data?.length > 0 && (
+  <div>
+    {selectedAssessment?._id ? (
+      <MemoizedStep
+        step={step}
+        selectedAssessmentId={selectedAssessment._id}
+        onComplete={handleStepComplete}
+      />
+    ) : (
+      !isLoading && assessments && assessments.data?.length > 0 && (
         <div>
-          <h3>Previous Assessments</h3>
+          <h2>Assessment in Progress - Step {step}</h2>
           <div className="flex flex-wrap gap-4">
             {assessments.data.map((assessment) => {
-              const isSelected = selectedId === assessment._id;
+              const isSelected = selectedAssessment?._id === assessment._id;
               return (
                 <div
                   key={assessment._id}
-                  onClick={() => handleSelect(assessment._id)}
+                  onClick={() => handleSelect(assessment)}
                   className={`p-3 rounded border cursor-pointer transition-all ${
-                    isSelected ? 'border-blue-500 shadow-lg bg-blue-50' : 'border-gray-300 bg-white'
+                    isSelected ? "border-blue-500 shadow-lg bg-blue-50" : "border-gray-300 bg-white"
                   }`}
                   tabIndex={0}
                 >
@@ -77,16 +79,11 @@ const Assessment = () => {
             })}
           </div>
         </div>
-      )}
+      )
+    )}
+  </div>
+);
 
-      {selectedAssessment?.questionsByLevel  && selectedAssessment.questionsByLevel?.length > 0 && (
-        <MemoizedStep
-          step={step}
-          onComplete={handleStepComplete}
-        />
-      )}
-    </div>
-  );
 };
 
 export default Assessment;

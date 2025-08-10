@@ -4,6 +4,7 @@ import { useGetSingleAssessmentQuery } from "../../redux/api/assessmentApi/asses
 
 interface Props {
   step: number;
+  selectedAssessmentId: string | null;
   onComplete: (score: number, certifiedLevel: string, noRetake: boolean) => void;
 }
 
@@ -16,7 +17,7 @@ const stepLevels: Record<number, string[]> = {
   3: ["C1", "C2"],
 };
 
-const Step: React.FC<Props> = ({ step, onComplete }) => {
+const Step: React.FC<Props> = ({step, onComplete }) => {
   const [questions, setQuestions] = useState<IQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(1);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -44,7 +45,6 @@ useEffect(() => {
 
     let correctCount = 0;
     questions.forEach((q) => {
-      // if (answers[q._id] === q.correctAnswer) correctCount++;
       if (answers[q._id] && q.options.find(opt => opt._id === answers[q._id] && opt.isCorrect)) {
         correctCount++;
       }
@@ -113,11 +113,10 @@ useEffect(() => {
   const q = questions[currentIndex];
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className="p-4 max-w-3xl" style={{margin: "0 auto"}}>
       <h2 className="text-xl font-semibold mb-2">Step {step} Test</h2>
       <div className="mb-4">
-
-        {/* { */}<div key={q._id} className="mb-4">
+        <div key={q._id} className="mb-4">
           <h3 className="font-medium"> {q.questionText}</h3>
           <div className="mt-2 grid grid-cols-2 gap-3">
             {q?.options?.map((opt) => (
@@ -135,17 +134,19 @@ useEffect(() => {
             </div>
       </div>
 
-      <div className="mb-4">
-        <span>Time left: {timeLeft}s</span>
-      </div>
+      <div className="flex justify-between items-center" style={{marginTop: "1rem"}}>
+        <div className="mb-4">
+          <span>Time left: {timeLeft}s</span>
+        </div>
 
-      <button
-        onClick={handleNext}
-        disabled={!answers[q?._id]}
-        className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
-      >
-        {currentIndex + 1 === questions?.length ? "Finish Test" : "Next Question"}
-      </button>
+        <button
+          onClick={handleNext}
+          disabled={!answers[q?._id]}
+          className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+        >
+          {currentIndex + 1 === questions?.length ? "Finish Test" : "Next Question"}
+        </button>
+      </div>
     </div>
   );
 };

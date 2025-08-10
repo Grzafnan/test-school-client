@@ -1,11 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, NavLink } from "react-router-dom"
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai"
+import { useAppSelector } from "../../../redux/hooks"
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { accessToken, user} = useAppSelector((state) => state.auth);
+  console.log({ user, accessToken });
 
   const menus = [
     { name: "Home", href: "/" },

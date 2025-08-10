@@ -5,6 +5,7 @@ import Error from "../pages/ErrorPage/Error";
 import Assessment from "../pages/Assessment/Assessment";
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
+import PrivateRoute from "./PrivateRoute";
 
 
 const routes = createBrowserRouter([
@@ -23,7 +24,7 @@ const routes = createBrowserRouter([
             },
             {
                 path: '/assessment',
-                element: <Assessment/>
+                element:<PrivateRoute><Assessment/></PrivateRoute>
             },
             {
                 path: '/login',
