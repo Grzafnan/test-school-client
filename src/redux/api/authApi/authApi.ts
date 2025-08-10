@@ -4,7 +4,7 @@ export interface IUser {
   _id: string;
   name: string;
   email: string;
-  token: string;
+  role: string;
 }
 
 export interface LoginRequest {
@@ -36,7 +36,7 @@ export const authApi = api.injectEndpoints({
         method: "POST",
       }),
     }),
-    getCurrentUser: builder.query<IUser | null, void>({
+    getCurrentUser: builder.query<{ data: { user: IUser } }, void>({
       query: () => "/auth/profile",
     }),
   }),

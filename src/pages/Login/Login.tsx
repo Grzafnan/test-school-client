@@ -44,9 +44,8 @@ const Login = () => {
 
 
   useEffect(()=>{
-      if(isSuccessUser && currentUser?.data) {
-        console.log("User data fetched successfully", currentUser);
-        dispatch(setProfile(!currentUser?.data));
+      if(isSuccessUser && currentUser?.data?.user) {
+        dispatch(setProfile(currentUser.data.user));
           navigate("/assessment");
       }
   },[isSuccessUser, navigate, dispatch, currentUser])
@@ -94,7 +93,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     const res = await login({ email: formData.email, password: formData.password }).unwrap();
 
     if(res.success) {
-      dispatch(setCredentials({ accessToken: res.data.accessToken as string }));
+      dispatch(setCredentials({ accessToken: res.data.accessToken }));
       // dispatch(setCredentials(res.data.isLoadingUser));
       // navigate("/assessment");
     }
