@@ -24,7 +24,7 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-lg relative">
-      <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
+      <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8" style={{margin: "0 auto"}}>
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="md:flex md:items-center md:gap-12">
