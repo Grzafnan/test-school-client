@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import Step from '../Step/Step';
-import Certification from '../Certification/Certification';
+import Step from '../../components/Step/Step';
+import Certification from '../../components/Certification/Certification';
 import { useGetAllAssessmentQuery } from '../../redux/api/assessmentApi/assessment.api';
 
 const MemoizedStep = React.memo(Step);
@@ -82,7 +82,6 @@ const Assessment = () => {
       {selectedAssessment?.questionsByLevel  && selectedAssessment.questionsByLevel?.length > 0 && (
         <MemoizedStep
           step={step}
-          // questions={selectedAssessment.questionsByLevel[0].questions}
           onComplete={handleStepComplete}
         />
       )}
