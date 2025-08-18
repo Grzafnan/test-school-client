@@ -11,11 +11,12 @@ import {
   AiOutlineExclamationCircle,
 } from "react-icons/ai"
 import { Input } from "../../components/ui/Input"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useGetCurrentUserQuery, useLoginMutation } from "../../redux/api/authApi/authApi"
 import { useAppDispatch } from "../../redux/hooks"
-import { setCredentials, setError, setProfile } from "../../redux/api/authApi/authSlice";
+import { setCredentials, setError, setProfile, setUserLoading } from "../../redux/api/authApi/authSlice";
 import { toast } from 'sonner';
+import Cookies from 'js-cookie';
 
 interface FormData {
   email: string
@@ -31,27 +32,43 @@ interface FormErrors {
 
 const Login = () => {
   const dispatch = useAppDispatch();
-  const [login, { isLoading, data, isSuccess }] = useLoginMutation();
-  const { data: currentUser, isLoading: isLoadingUser, isSuccess: isSuccessUser } = useGetCurrentUserQuery(undefined, { skip: !data?.data?.accessToken });
+  const accessToken = Cookies.get("accessToken");
+  const refreshToken = Cookies.get("refreshToken");
+
+  const [login, { isLoading, isSuccess }] = useLoginMutation();
+  const { data: currentUser, isLoading: isLoadingUser, isSuccess: isSuccessUser, refetch } = useGetCurrentUserQuery(undefined, { skip: !(accessToken && refreshToken) });
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/assessment";
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   })
   const [errors, setErrors] = useState<FormErrors>({})
-  const [showPassword, setShowPassword] = useState(false);
-  // const [isSuccess, setIsSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [focusedField, setFocusedField] = useState<string | null>(null)
+
+  useEffect(()=>{
+      if(accessToken && refreshToken) {
+        refetch();
+        navigate(from, { replace: true });
+      }
+  },[dispatch, accessToken, refreshToken, from, navigate, refetch])
 
 
   useEffect(()=>{
-      if(isSuccess && isSuccessUser) {
-        console.log("User login successful:", currentUser);
-        dispatch(setProfile(currentUser.data));
-        toast.success("User login successfully");
+    if(isSuccess && isSuccessUser && currentUser?.data){
+      dispatch(setUserLoading(false));
+      dispatch(setProfile(currentUser.data));
+      toast.success("User login successfully");
+      if(currentUser.data.role === "admin" || currentUser.data.role === "supervisor") {
+        navigate("/dashboard");
+      } else if(currentUser.data.role === "user") {
         navigate("/assessment");
       }
-  },[isSuccess , isSuccessUser, navigate, dispatch, currentUser])
+    }
+  },[isSuccess , isSuccessUser, navigate, dispatch, currentUser,isLoading, isLoadingUser])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -95,11 +112,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     const res = await login({ email: formData.email, password: formData.password }).unwrap();
 
-    if(res.success) {
-      dispatch(setCredentials({ accessToken: res.data.accessToken }));
-      // dispatch(setCredentials(res.data.isLoadingUser));
-      // navigate("/assessment");
-    }
+  if (res.success) {
+    // dispatch(setUserLoading(true));
+    dispatch(setCredentials({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }));
+}
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       dispatch(setError(error.data?.message || "Login failed"));

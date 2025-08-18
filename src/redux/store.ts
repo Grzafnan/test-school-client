@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { api } from './api/api'
-import authReducer from './api/authApi/authSlice'
+import authReducer, { hydrateAuth } from './api/authApi/authSlice'
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +13,8 @@ export const store = configureStore({
 })
 
 setupListeners(store.dispatch)
+
+store.dispatch(hydrateAuth());
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

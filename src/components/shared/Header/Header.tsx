@@ -1,4 +1,5 @@
 "use client"
+import Cookies from "js-cookie";
 
 import { useState } from "react"
 import { Link, NavLink, useNavigate } from "react-router-dom"
@@ -19,6 +20,7 @@ const Header = () => {
     { name: "Assessment", href: "/assessment" },
     { name: "History", href: "/history" },
     { name: "Services", href: "/services" },
+    { name: "Dashboard", href: "/dashboard" }
   ]
 
   const toggleMobileMenu = () => {
@@ -35,6 +37,8 @@ const Header = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
     toast.success("Logged out successfully");
     navigate("/login");
 

@@ -4,16 +4,19 @@ import { Spinner } from '../components/Spinner/Spinner';
 import { useAppSelector } from '../redux/hooks';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const {accessToken, loading} = useAppSelector((state) => state.auth);
   const location = useLocation();
-  if (accessToken && accessToken) {
-    return children;
-  }
+  const { accessToken, loading } = useAppSelector((state) => state.auth);
   if (loading) {
-    return <Spinner />
+    return <div className='h-screen flex items-center justify-center'>
+      <Spinner />
+    </div>;
   }
 
-  return <Navigate to="/login" state={{ from: location }} replace />
+  if (!accessToken) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
 };
 
 export default PrivateRoute;

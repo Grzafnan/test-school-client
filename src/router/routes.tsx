@@ -6,6 +6,12 @@ import Assessment from "../pages/Assessment/Assessment";
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import PrivateRoute from "./PrivateRoute";
+import DashboardLayout from "../Layouts/DashboardLayout";
+import Dashboard from "../pages/Dashboard/Dashboard";
+import Users from "../components/Dashboard/Admin/Users";
+import Question from "../components/Dashboard/Admin/Question";
+import Unauthorized from "../pages/Unauthorized/Unauthorized";
+import ProtectedAdminRoute from "./ProtectedAdminRoute";
 
 
 const routes = createBrowserRouter([
@@ -33,8 +39,32 @@ const routes = createBrowserRouter([
             {
                 path: '/register',
                 element: <Register/>
+            },
+            {
+                path: '/unauthorized',
+                element: <Unauthorized/>
             }
         ]
+    }, 
+    {
+        path: '/dashboard',
+        element: <PrivateRoute><DashboardLayout/></PrivateRoute>,
+        errorElement: <Error/>,
+        children: [
+            {
+                path: '',
+                element: <Dashboard/>
+            },
+            {
+                path: '/dashboard/users',
+                element: <ProtectedAdminRoute allowedRoles={['admin']}><Users/></ProtectedAdminRoute>
+            },
+            {
+                path: '/dashboard/questions',
+                element: <ProtectedAdminRoute allowedRoles={['admin']}><Question/></ProtectedAdminRoute>
+            }
+        ]
+
     }
 ])
 
