@@ -59,13 +59,15 @@ const Login = () => {
 
   useEffect(()=>{
     if(isSuccess && isSuccessUser && currentUser?.data){
-      dispatch(setUserLoading(false));
+      console.log({currentUser});
       dispatch(setProfile(currentUser.data));
+      dispatch(setUserLoading(false));
       toast.success("User login successfully");
+      if(currentUser.data.role === "user") {
+        navigate("/assessment");
+      }
       if(currentUser.data.role === "admin" || currentUser.data.role === "supervisor") {
         navigate("/dashboard");
-      } else if(currentUser.data.role === "user") {
-        navigate("/assessment");
       }
     }
   },[isSuccess , isSuccessUser, navigate, dispatch, currentUser,isLoading, isLoadingUser])

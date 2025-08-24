@@ -47,25 +47,44 @@ const routes = createBrowserRouter([
         ]
     }, 
     {
-        path: '/dashboard',
-        element: <PrivateRoute><DashboardLayout/></PrivateRoute>,
-        errorElement: <Error/>,
-        children: [
-            {
-                path: '',
-                element: <Dashboard/>
-            },
-            {
-                path: '/dashboard/users',
-                element: <ProtectedAdminRoute allowedRoles={['admin']}><Users/></ProtectedAdminRoute>
-            },
-            {
-                path: '/dashboard/questions',
-                element: <ProtectedAdminRoute allowedRoles={['admin']}><Question/></ProtectedAdminRoute>
-            }
-        ]
-
-    }
+  path: '/dashboard',
+  element: (
+    <PrivateRoute>
+      <DashboardLayout />
+    </PrivateRoute>
+  ),
+  errorElement: <Error />,
+  children: [
+    {
+      path: '',
+      element: (
+        <PrivateRoute>
+          <Dashboard />
+        </PrivateRoute>
+      ),
+    },
+    {
+      path: '/dashboard/users',
+      element: (
+        <PrivateRoute>
+          <ProtectedAdminRoute allowedRoles={['admin']}>
+            <Users />
+          </ProtectedAdminRoute>
+        </PrivateRoute>
+      ),
+    },
+    {
+      path: '/dashboard/questions',
+      element: (
+        <PrivateRoute>
+          <ProtectedAdminRoute allowedRoles={['admin']}>
+            <Question />
+          </ProtectedAdminRoute>
+        </PrivateRoute>
+      ),
+    },
+  ],
+}
 ])
 
 export default routes;

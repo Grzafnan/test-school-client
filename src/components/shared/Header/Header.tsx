@@ -7,6 +7,7 @@ import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai"
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks"
 import { logout } from "../../../redux/api/authApi/authSlice"
 import { toast } from "sonner"
+import { Button } from "../../ui/Button";
 
 const Header = () => {
   const dispatch = useAppDispatch();
@@ -270,28 +271,28 @@ const Header = () => {
 
           {/* Mobile Auth Buttons */}
           <div className="p-4 border-t border-gray-200 flex flex-col gap-3">
-            <NavLink
-              className={({ isActive }) =>
-                `block w-full text-center rounded-md px-5 py-3 text-sm font-medium shadow-sm transition-colors ${isActive ? "bg-teal-700 text-white" : "bg-teal-600 text-white hover:bg-teal-700"
-                }`
-              }
-              to="/login"
-              onClick={closeMobileMenu}
+            <Button
+              className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+              role="Logout"
+              onClick={handleLogout}
             >
-              Login
-            </NavLink>
-            <NavLink
-              className={({ isActive }) =>
-                `block w-full text-center rounded-md px-5 py-3 text-sm font-medium transition-colors ${isActive
-                  ? "bg-gray-200 text-teal-700 border-2 border-teal-600"
-                  : "bg-gray-100 text-teal-600 hover:bg-gray-200"
-                }`
-              }
-              to="/register"
-              onClick={closeMobileMenu}
-            >
-              Register
-            </NavLink>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="size-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                />
+              </svg>
+
+              Logout
+            </Button>
           </div>
         </div>
       </div>

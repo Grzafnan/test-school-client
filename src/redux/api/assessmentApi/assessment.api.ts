@@ -34,6 +34,17 @@ const assessmentApi = api.injectEndpoints({
       invalidatesTags: ["Assessment"],
     }),
 
+     // Create assessment
+    createAssessmentSession: builder.mutation({
+      query: (data) => ({
+        method: "POST",
+        credentials: "include",
+        url: `/sessions/create`,
+        body: {...data},
+      }),
+      invalidatesTags: ["Assessment"],
+    }),
+
     // Delete assessment
     deleteAssessment: builder.mutation<ApiResponse<{ deletedId: string }>, string>({
       query: (id) => ({
@@ -49,5 +60,6 @@ export const {
   useGetAllAssessmentQuery,
   useGetSingleAssessmentQuery,
   useCreateAssessmentMutation,
+  useCreateAssessmentSessionMutation,
   useDeleteAssessmentMutation,
 } = assessmentApi;

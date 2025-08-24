@@ -10,7 +10,8 @@ interface PrivateRouteProps {
 
 const ProtectedAdminRoute = ({ children, allowedRoles }: PrivateRouteProps)  => {
     const location = useLocation();
-const { isAuthenticated, user } = useAppSelector((state: RootState) => state.auth);
+const { isAuthenticated, user, loading } = useAppSelector((state: RootState) => state.auth);
+console.log('ProtectedAdminRoute - loading:', loading);
   if (!isAuthenticated && !user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }

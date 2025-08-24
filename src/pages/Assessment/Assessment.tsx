@@ -1,32 +1,62 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Step from '../../components/Step/Step';
 import Certification from '../../components/Certification/Certification';
-import { useGetAllAssessmentQuery } from '../../redux/api/assessmentApi/assessment.api';
+import { useCreateAssessmentSessionMutation, useGetAllAssessmentQuery } from '../../redux/api/assessmentApi/assessment.api';
 import { IAssessment } from '../../interfaces/common';
+import { Spinner } from '../../components/Spinner/Spinner';
+import { useAppSelector } from '../../redux/hooks';
+import { toast } from 'sonner';
 
 const MemoizedStep = React.memo(Step);
 
 const Assessment = () => {
+  const [createAssessmentSession, {isLoading: isLoadingSession, data}] = useCreateAssessmentSessionMutation();
+  const { user } = useAppSelector(state => state.auth);
+  console.log("Assessment Session Data:", {isLoadingSession, data});
   const [step, setStep] = useState(1);
   const [score, setScore] = useState<number>(0);
-  const [certifiedLevel, setCertifiedLevel] = useState<string>("fail");
+  const [certifiedLevel, setCertifiedLevel] = useState<string>("");
   const [noRetake, setNoRetake] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<IAssessment | null>(null);
+  const [startedAt, setStartedAt] = useState<Date | null>(null);
 
   const { data: assessments, isLoading } = useGetAllAssessmentQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
 
+  const handleStepComplete = useCallback(
+    async (stepScore: number, level: string, failNoRetake: boolean) => {
+      try {
+        setScore(stepScore);
+        setCertifiedLevel(level);
+        setNoRetake(failNoRetake);
 
-  const handleStepComplete = useCallback((stepScore: number, level: string, failNoRetake: boolean) => {
-    setScore(stepScore);
-    setCertifiedLevel(level);
-    setNoRetake(failNoRetake);
+        // handle next step logic
+        if (!failNoRetake && step < 3 && stepScore >= 75) {
+          setStep((prev) => prev + 1);
+        } else {
+          setNoRetake(true);
+        }
 
-    if (!failNoRetake && step < 3 && stepScore >= 75) {
-      setStep(prev => prev + 1);
-    }
-  }, [step]);
+        // build payload
+        const payload = {
+          step,
+          score: stepScore,
+          userId: user?._id,
+          certifiedLevel: level,
+          startedAt,
+          isRetake: failNoRetake,
+        };
+        
+        await createAssessmentSession(payload).unwrap();
+      } catch (error) {
+        toast.error("Error creating assessment session");
+        console.error("Error creating assessment session:", error);
+      }
+    },
+    [step, startedAt, user, createAssessmentSession]
+  );
+
 
   const handleSelect = useCallback((assessment: IAssessment) => {
     setSelectedAssessment(assessment);
@@ -34,6 +64,7 @@ const Assessment = () => {
 
   useEffect(() => {
     if (selectedAssessment) {
+      setStartedAt(new Date());
       setScore(selectedAssessment.score ?? 0);
       setCertifiedLevel(selectedAssessment.level ?? "fail");
       setNoRetake(selectedAssessment.noRetake ?? false);
@@ -49,41 +80,44 @@ const Assessment = () => {
   }
   
   return (
-  <div>
-    {selectedAssessment?._id ? (
-      <MemoizedStep
-        step={step}
-        selectedAssessmentId={selectedAssessment._id}
-        onComplete={handleStepComplete}
-      />
-    ) : (
-      !isLoading && assessments && assessments.data?.length > 0 && (
-        <div>
-          <h2>Assessment in Progress - Step {step}</h2>
-          <div className="flex flex-wrap gap-4">
-            {assessments.data.map((assessment) => {
-              const isSelected = selectedAssessment?._id === assessment._id;
-              return (
-                <div
-                  key={assessment._id}
-                  onClick={() => handleSelect(assessment)}
-                  className={`p-3 rounded border cursor-pointer transition-all ${
-                    isSelected ? "border-blue-500 shadow-lg bg-blue-50" : "border-gray-300 bg-white"
-                  }`}
-                  tabIndex={0}
-                >
-                  <h4 className="text-primary text-xl font-bold">{assessment.name}</h4>
-                  <p className="m-0 font-medium">{assessment.description}</p>
-                </div>
-              );
-            })}
+    <div>
+      {selectedAssessment?._id ? (
+        <MemoizedStep
+          step={step}
+          selectedAssessmentId={selectedAssessment._id}
+          onComplete={handleStepComplete}
+        />
+      ) : (
+        isLoading ? (
+          <div className='h-[90vh] flex flex-col items-center justify-center'>
+            <Spinner></Spinner>
           </div>
-        </div>
-      )
-    )}
-  </div>
-);
-
+        ) : assessments && assessments.data?.length > 0 ? (
+          <div>
+            <div className="flex flex-wrap gap-4">
+              {assessments.data.map((assessment) => {
+                const isSelected = selectedAssessment?._id === assessment._id;
+                return (
+                  <div
+                    key={assessment._id}
+                    onClick={() => handleSelect(assessment)}
+                    className={`p-3 rounded border cursor-pointer transition-all ${isSelected ? "border-blue-500 shadow-lg bg-blue-50" : "border-gray-300 bg-white"
+                      }`}
+                    tabIndex={0}
+                  >
+                    <h4 className="text-primary text-xl font-bold">{assessment.name}</h4>
+                    <p className="m-0 font-medium">{assessment.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div>No assessment available!!!</div>
+        )
+      )}
+    </div>
+  );
 };
 
 export default Assessment;

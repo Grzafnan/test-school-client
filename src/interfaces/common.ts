@@ -46,3 +46,19 @@ export interface IOption {
     updatedAt?: string; // ISO date
     __v?: number;
 }
+
+
+export interface ISession {
+  userId: string;
+  step: number;
+  score: number;
+  isRetake: boolean;
+  certifiedLevel: string;
+  startedAt: Date;
+  completedAt?: Date;
+  // answers: {
+  //   questionId: Types.ObjectId;
+  //   selectedOption: string;
+  //   isCorrect: boolean;
+  // }[];
+}
